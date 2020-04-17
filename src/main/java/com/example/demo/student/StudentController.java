@@ -9,11 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /*
-Creo una classe annotata @RestController e aggiungo @RequestMapping con il quale indico
-URL di base per accedere al controller e ai vari metodi definiti all'interno.
-Annoto il metodo getStudent con @GetMapping(path = "{studentId}").Associo il valore passato
-attraverso URL alla variabile studentID e all'interno del metodo con @PathVariable("studentId")
-rendo disponibile tale valore al metodo stesso.
+Per autorizzare l'accesso a api/v1/students al ruolo STUDENT devo proteggere
+questa risorsa con role based authentication. Uso antMatchers nella classe di configurazione
+ApplicationSecurityConfig
  */
 
 @RestController

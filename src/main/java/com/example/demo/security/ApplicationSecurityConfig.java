@@ -16,8 +16,9 @@ import static com.example.demo.security.ApplicationUserRole.ADMIN;
 import static com.example.demo.security.ApplicationUserRole.STUDENT;
 
 /*
-Modifico i ruoli dei 2 utenti inserendo gli ENUM appena creati (i metodo name() restituesce
-il nome così come dichiarato nella enum
+Modifico il metodo configure per permettere all'accesso a api/v1/students
+solo al ruolo STUDENT. Uso antMatchers.hasRole
+/api/** significa per qualsiasi risorsa dopo /api/
  */
 
 @Configuration
@@ -35,8 +36,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/", "index", "/css/*", "/js/*")
-                .permitAll()
+                .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
+                .antMatchers("/api/**").hasRole(STUDENT.name())
                 .anyRequest()
                 .authenticated()
                 .and()
