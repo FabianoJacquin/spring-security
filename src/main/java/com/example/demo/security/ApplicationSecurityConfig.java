@@ -12,16 +12,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+import static com.example.demo.security.ApplicationUserRole.ADMIN;
+import static com.example.demo.security.ApplicationUserRole.STUDENT;
+
 /*
-Override del metodo UserDetailsService (come recupero l'utente dal db) e annotare con
-@Bean (in maniera tale che Spring crei automaticamente un'istanza). Non essendoci un db uso in memory hash map
-creo un utente (utilizzando la classe User di spring framework) con username, password e ROLE.
-Il metodo restituisce un InMemoryUserDetailsManager
-Il ruolo STUDENT internamente da spring viene visto come ROLE_STUDENT
-La password deve essere codificata (ricevo un errore che mi segnala che la password non è
-codificata), utilizzo quindi PasswordEncoder (vedi classe PasswordConfig).
-Per utilizzare PasswordEncoder faccio @Autowired (verrà utilizzato il Bean che restituisce un
-oggetto PasswordEncoder della classe PasswordConfig) e codifico la password nel metodo userDetailsService
+Modifico i ruoli dei 2 utenti inserendo gli ENUM appena creati (i metodo name() restituesce
+il nome così come dichiarato nella enum
  */
 
 @Configuration
@@ -54,11 +50,18 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
         UserDetails annaSmithUser = User.builder()
                 .username("annasmith")
                 .password(passwordEncoder.encode("password"))
-                .roles("STUDENT")
+                .roles(STUDENT.name())
+                .build();
+
+        UserDetails lindaUser = User.builder()
+                .username("linda")
+                .password(passwordEncoder.encode("password123"))
+                .roles(ADMIN.name())
                 .build();
 
         return new InMemoryUserDetailsManager(
-                annaSmithUser
+                annaSmithUser,
+                lindaUser
         );
 
     }
