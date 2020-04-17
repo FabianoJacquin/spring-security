@@ -6,19 +6,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
 /*
-@Configuration dico a Spring Boot di istanziare all'avvio questa classe e che si tratta di una classe
-di configurazione
-@EnableWebSecurity dico a Spring che questa è la classe nella quale viene configurato Spring Security per tutta
-l'applicazione
-Devo estendere WebSecurityConfigurerAdapter e fare l'override del metodo configure. All'interno di questo metodo
-scrivo il codice di comnfigurazione
-
-authorizeRequests voglio autorizzare le richieste
-anyRequest tutte le richieste (username a pwd vengono inviati ad ogni richiesta)
-authenticated devono essere autenticate (specificando username e password)
-and e
-httpBasic usando basic authentication
-
+Aggiunto antMatchers per inserire in white list index, css, js e permitAll
+(per permettere di visualizzare la pagina index senza dover inserire le credenziali)
  */
 
 @Configuration
@@ -29,6 +18,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
+                .antMatchers("/", "index", "/css/*", "/js/*")
+                .permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
