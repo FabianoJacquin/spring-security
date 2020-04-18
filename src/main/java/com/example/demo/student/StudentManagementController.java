@@ -1,12 +1,10 @@
 package com.example.demo.student;
 
 /*
-Creo la lista STUDENTS e 4 metodi. Alcuni saranno permessi solo ad ADMIN (write)
-e altri anche ad ADMINTRAINEE
-I metodi che modificano in dati sono di default protetti in Spring. Bisogna inserire csrf.disable in
-ApplicationSecurityConfig
+Con @PreAuthorize posso implementare l'autenticazione in base ai authority  o  ruoli
  */
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -23,24 +21,28 @@ public class StudentManagementController {
     );
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_ADMINTRAINEE')")
     public List<Student> getAllStudents(){
         System.out.println("getAllStudents");
         return STUDENTS;
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('student:write')")
     public void registerNewStudent(@RequestBody Student student){
         System.out.println("registerNewStudent");
         System.out.println(student);
     }
 
     @DeleteMapping(path = "{studentId}")
+    @PreAuthorize("hasAnyAuthority('student:write')")
     public void deleteStudent(@PathVariable("studentId") Integer studentId){
         System.out.println("deleteStudent");
         System.out.println(studentId);
     }
 
     @PutMapping(path = "{studentId}")
+    @PreAuthorize("hasAnyAuthority('student:write')")
     public void updateStudent(@PathVariable("studentId") Integer studentId,
                               @RequestBody Student student){
         System.out.println("updateStudent");

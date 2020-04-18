@@ -3,7 +3,7 @@ package com.example.demo.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -13,24 +13,18 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
-import static com.example.demo.security.ApplicationUserPermission.COURSE_WRITE;
 import static com.example.demo.security.ApplicationUserRole.*;
 
 /*
-Inserito csrf.disable per disabilitare la protezione di default
-di Spring inerente la modificsa dei dati (altrimenti solo i GET sono
-consentiti).
-Ci sono due modi per implememntare l'autenticazione in base ai permessi: tramite
-antMatchers e tramite le annotazioni
-Devo anche inserire il concetto di authority agli utenti, che per il momento hanno unicamente
-un riferimento al ruolo. Modifico la classe ApplicationUSerRole inserendo il metodo getGrantedAuthorities
-Elimino .roles() ed inserisco .authorities(STUDENT.getGrantedAuthorities()) -> per ogni ruolo chiamo il metodo
-getGrantedAuthorities che ho creato in ApplicationUserRole il quale mi resitutosce un set di SimpleGrantedAuthority
-contenente sia le permission (ad esempio student:read) che il ruoli formatti nel mode corretto ROLE_STUDENT
+Elimino tutti gli antMatchers perchè ho inserito l'annotazione
+@PreAuthorize() nei  metodi della classe StudentManagementCntroller  ma devo
+comunque dire a SPIRNG che intendo ulitlizzare la annotazioni
+con @EnableGlobalMethodSecurity(prePostEnabled = true)
  */
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PasswordEncoder passwordEncoder;
@@ -47,10 +41,6 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(STUDENT.name())
-                .antMatchers(HttpMethod.DELETE, "/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
-                .antMatchers(HttpMethod.POST, "/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
-                .antMatchers(HttpMethod.PUT, "/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
-                .antMatchers(HttpMethod.GET, "/management/api/**").hasAnyRole(ADMIN.name(), ADMINTRAINEE.name())
                 .anyRequest()
                 .authenticated()
                 .and()
