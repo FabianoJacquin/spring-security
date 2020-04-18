@@ -12,14 +12,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import static com.example.demo.security.ApplicationUserRole.*;
 
 /*
-Elimino tutti gli antMatchers perchè ho inserito l'annotazione
-@PreAuthorize() nei  metodi della classe StudentManagementCntroller  ma devo
-comunque dire a SPIRNG che intendo ulitlizzare la annotazioni
-con @EnableGlobalMethodSecurity(prePostEnabled = true)
+Elimino csrf.disable così da usare la protezione csrf sui metodi
+put, delete e post e configuro il csrf token con
+.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+Cosi facendo il server invia un token (X-XSRF-TOKEN) che devo poi essere
+inviato dal dal client per le richieste delete, put, post
  */
 
 @Configuration
@@ -37,7 +39,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()
+                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .and()
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(STUDENT.name())
