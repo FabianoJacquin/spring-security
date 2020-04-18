@@ -16,13 +16,12 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import static com.example.demo.security.ApplicationUserRole.*;
 
 /*
-Per attivare il form authentication è sufficiente togliere .httpBasic
-e inserire .formLogin()
-Dopo aver effettuato il login il server crea ed invia un cookie chiamato JSESSIONID
-che di default ha una durata di 30 minuti
-Di defualt Spring security utilizza un in memory db. Se riavvio l'applicazione Spring
-il cookie viene rigenrato e il vecchio cookie viene perso
-Naturalemnte è possibile utilizzare un database comne Postgres...o altro
+Per customizzare la login page aggoiungo loginPage("/login"), aggiungo
+nel pom.xml la dipendenza thymeleaf (engine template).
+Creo il file login.html all'interno della cartella templates, creo il package controller,
+Aggiungo anche permitAll alla login altrimenti Spring Security bloccherà la pagina
+E' stato inoltre aggiunto .defaultSuccessUrl("/courses", true); che in caso di successo
+dopo il login redirige sulla pagina appena creata courses.html
  */
 
 @Configuration
@@ -47,7 +46,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest()
                 .authenticated()
                 .and()
-                .formLogin();
+                .formLogin()
+                .loginPage("/login").permitAll()
+                .defaultSuccessUrl("/courses", true);
     }
 
     @Override
