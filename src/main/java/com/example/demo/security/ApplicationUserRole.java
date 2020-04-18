@@ -1,26 +1,23 @@
 package com.example.demo.security;
 
 /*
-Creo un ENUM per definire i ruoli. Ad un ruolo posso associare 0 o più permessi
-Dopo aver creato la ENUM ApplicationUserPermission in questa ENUM aggiungo un set
-permissions (ogni ruolo può avere 0 o più permessi), creo il costruttore ed il metodo
-getter
-Uso Guava e creo un nuovo HashSet vuoto per il ruolo STUDENT (non ha permessi) e
-un HashSet con tutti i permessi per il ruolo ADMIN. I permessi vengono presi dalla
-ENUM ApplicationUserPermission che importo staticamente
-In ApplicationSecurityConfig collego i ruoli appena creati ai rispettivi utenti
+In getGrantedAuthorities per ogni ruolo creo un set di SimpleGrantedAuthority
+che mi servirà per
  */
 
 import com.google.common.collect.Sets;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.example.demo.security.ApplicationUserPermission.*;
 
 public enum ApplicationUserRole {
 
     STUDENT(Sets.newHashSet()),
-    ADMIN(Sets.newHashSet(COURSE_READ, COURSE_WRITE, STUDENT_READ, STUDENT_WRITE));
+    ADMIN(Sets.newHashSet(COURSE_READ, COURSE_WRITE, STUDENT_READ, STUDENT_WRITE)),
+    ADMINTRAINEE(Sets.newHashSet(COURSE_READ, STUDENT_READ));
 
     private final Set<ApplicationUserPermission> permissions;
 
@@ -29,6 +26,15 @@ public enum ApplicationUserRole {
     }
 
     public Set<ApplicationUserPermission> getPermissions() {
+        return permissions;
+    }
+
+    public Set<SimpleGrantedAuthority> getGrantedAuthorities(){
+
+        Set<SimpleGrantedAuthority> permissions = getPermissions().stream()
+                .map(permission -> new SimpleGrantedAuthority(permission.getPermission()))
+                .collect(Collectors.toSet());
+        permissions.add(new SimpleGrantedAuthority("ROLE_" + this.name()));
         return permissions;
     }
 }
