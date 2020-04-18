@@ -12,16 +12,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import static com.example.demo.security.ApplicationUserRole.*;
 
 /*
-Elimino csrf.disable così da usare la protezione csrf sui metodi
-put, delete e post e configuro il csrf token con
-.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-Cosi facendo il server invia un token (X-XSRF-TOKEN) che devo poi essere
-inviato dal dal client per le richieste delete, put, post
+Per attivare il form authentication è sufficiente togliere .httpBasic
+e inserire .formLogin()
+Dopo aver effettuato il login il server crea ed invia un cookie chiamato JSESSIONID
+che di default ha una durata di 30 minuti
+Di defualt Spring security utilizza un in memory db. Se riavvio l'applicazione Spring
+il cookie viene rigenrato e il vecchio cookie viene perso
+Naturalemnte è possibile utilizzare un database comne Postgres...o altro
  */
 
 @Configuration
@@ -39,15 +40,14 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .and()
+                .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(STUDENT.name())
                 .anyRequest()
                 .authenticated()
                 .and()
-                .httpBasic();
+                .formLogin();
     }
 
     @Override
