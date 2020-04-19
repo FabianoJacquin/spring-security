@@ -19,25 +19,9 @@ import java.util.concurrent.TimeUnit;
 import static com.example.demo.security.ApplicationUserRole.*;
 
 /*
-Di default il cookie sessionId scade dopo 30 minuti di inattività
-Impostando .rememberMe() si ottiene una validità di default di 2 settimane
-Perchè l'impostazione remeber-me abbia effetto bisogna aggoungere alla pagina
-di login un check-box che chiameremo remember-me. Se selezionato il cookie
-avrà valore per 2 settimane (default). Ci sarà, oltre al cookie JSESSIONID anche
-un cookie remember-me con validà 2 settimane. Anche questo cookie è in memory
-La validà del cookie può essere customizzata con tokenValiditySeconds
-Remember me contiene username e password. Inserendo .key si crea un md5 hash
-con i due valori username e password
-Aggiungendo logout() e tutte le istruzioni che seguono implemento la funzionalità
-di logout
-La linea .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET")) può
-essere omessa in quanto di default logout viene chiamato con un GET. Però se
-abilito csrf per motivi di sicurezza bisogna cambiare GET con POST
-All'interno delle sezioni .formLogin e .rememberMe ho inserito password, username e
-remember parameter solo per dimostrare che sono
-valori cpnfigurabili (i valori inserirti sono quelli di default e quindi il codice
-inserito potrebbe essere rimosso) -> se vengono cambiati bisogna modificare i corrispondenti
-valori nella pagina di login
+Il compito di UserDetailsService è di estrarre i dati degli utenti dal database. La classe auth
+ApplicationUserService implementa l'interfaccia UserDetailService
+
  */
 
 @Configuration
