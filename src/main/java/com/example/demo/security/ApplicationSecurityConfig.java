@@ -12,16 +12,32 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import java.util.concurrent.TimeUnit;
 
 import static com.example.demo.security.ApplicationUserRole.*;
 
 /*
-Per customizzare la login page aggoiungo loginPage("/login"), aggiungo
-nel pom.xml la dipendenza thymeleaf (engine template).
-Creo il file login.html all'interno della cartella templates, creo il package controller,
-Aggiungo anche permitAll alla login altrimenti Spring Security bloccherà la pagina
-E' stato inoltre aggiunto .defaultSuccessUrl("/courses", true); che in caso di successo
-dopo il login redirige sulla pagina appena creata courses.html
+Di default il cookie sessionId scade dopo 30 minuti di inattività
+Impostando .rememberMe() si ottiene una validità di default di 2 settimane
+Perchè l'impostazione remeber-me abbia effetto bisogna aggoungere alla pagina
+di login un check-box che chiameremo remember-me. Se selezionato il cookie
+avrà valore per 2 settimane (default). Ci sarà, oltre al cookie JSESSIONID anche
+un cookie remember-me con validà 2 settimane. Anche questo cookie è in memory
+La validà del cookie può essere customizzata con tokenValiditySeconds
+Remember me contiene username e password. Inserendo .key si crea un md5 hash
+con i due valori username e password
+Aggiungendo logout() e tutte le istruzioni che seguono implemento la funzionalità
+di logout
+La linea .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET")) può
+essere omessa in quanto di default logout viene chiamato con un GET. Però se
+abilito csrf per motivi di sicurezza bisogna cambiare GET con POST
+All'interno delle sezioni .formLogin e .rememberMe ho inserito password, username e
+remember parameter solo per dimostrare che sono
+valori cpnfigurabili (i valori inserirti sono quelli di default e quindi il codice
+inserito potrebbe essere rimosso) -> se vengono cambiati bisogna modificare i corrispondenti
+valori nella pagina di login
  */
 
 @Configuration
@@ -47,8 +63,24 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated()
                 .and()
                 .formLogin()
-                .loginPage("/login").permitAll()
-                .defaultSuccessUrl("/courses", true);
+                    .loginPage("/login")
+                    .permitAll()
+                    .defaultSuccessUrl("/courses", true)
+                    .passwordParameter("password")
+                    .usernameParameter("username")
+                .and()
+                .rememberMe()
+                    .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(28))
+                    .key("somethingverisecure")
+                    .rememberMeParameter("remember-me ")
+                .and()
+                .logout()
+                    .logoutUrl("/logout")
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
+                    .deleteCookies("JSESSIONID", "remember-me")
+                    .logoutSuccessUrl("/login");
     }
 
     @Override
