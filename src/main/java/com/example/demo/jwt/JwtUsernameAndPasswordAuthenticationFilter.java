@@ -1,32 +1,30 @@
 package com.example.demo.jwt;
 
 /*
-Classe che si occupa della verifica e validazione delle credenziali ricevute dal client.
-Estendere UsernamePasswordAuthenticationFilter e fare @Override del metodo attemptAuthentication
-che come parametri prende request e response.
-La prima cose che deve fare attemptAuthentication è di prendere username e password. A questo scopo
-creo classe UsernameAndPasswordAuthenticationRequest (si tratta semplicemente di un POJO per gestire
-username e password).
-Per inserire username e password all'interno della classe UsernameAndPasswordAuthenticationRequest
-uso ObjectMapper.
-Per verificare se username e password sono corretti uso AuthenticationManager e il suo unico metodo
-authenticate che prende come paramentro un oggetto Authentication. Si tratta di un'interfaccia
-che è implementata da diverse classi. Quella che ci interessa è UsernamePasswordAuthenticationToken
-che richiede due parametri: principal (username) e credential (password).
-authenticationManager verifica che l'utente esista e se esiste che la password sia corretta.
-
+Una volta che autenthicationManager ha verificato username e password viene chiamato il metodo
+successfulAuthentication di cui faccio @Override (in pratica viene chiamato dopo che
+attemptAuthentication ha restituito un oggetto Authentication che è autenticato
+All'interno di questo metodo viene creato il token e inviato al client
+Utilizzo Jwts (libreria jsonwebtoken) per generare il token
+e lo invio al client tramite response
  */
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Date;
 
 public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -55,5 +53,23 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    protected void successfulAuthentication(HttpServletRequest request,
+                                            HttpServletResponse response,
+                                            FilterChain chain, Authentication authResult) throws IOException, ServletException {
+
+        String key = "questachiavedeveessereveramentemoltosicuramamoltomoltosicura";
+
+        String token = Jwts.builder()
+                .setSubject(authResult.getName())
+                .claim("authorities", authResult.getAuthorities())
+                .setIssuedAt(new Date())
+                .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2)))
+                .signWith(Keys.hmacShaKeyFor(key.getBytes()))
+                .compact();
+
+        response.addHeader("Authorization", "Bearer " + token);
     }
 }
